@@ -1,0 +1,52 @@
+/* Pyeojin Gothic — Kibo's single typeface family.
+   Korean + Latin gothic sans. Weights 300–900. */
+
+@font-face {
+  font-family: "Pyeojin Gothic";
+  src: url("../assets/fonts/PyeojinGothic-Light.ttf") format("truetype");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Pyeojin Gothic";
+  src: url("../assets/fonts/PyeojinGothic-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Pyeojin Gothic";
+  src: url("../assets/fonts/PyeojinGothic-Medium.ttf") format("truetype");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Pyeojin Gothic";
+  src: url("../assets/fonts/PyeojinGothic-Semibold.ttf") format("truetype");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Pyeojin Gothic";
+  src: url("../assets/fonts/PyeojinGothic-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Pyeojin Gothic";
+  src: url("../assets/fonts/PyeojinGothic-Extrabold.ttf") format("truetype");
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Pyeojin Gothic";
+  src: url("../assets/fonts/PyeojinGothic-Black.ttf") format("truetype");
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}

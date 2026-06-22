@@ -1,0 +1,26 @@
+# --- macOS ---
+.DS_Store
+
+# --- IDE (Android Studio / IntelliJ) ---
+.idea/
+*.iml
+
+# --- Claude Code local state ---
+.claude/
+
+# --- Android / Gradle build outputs (regenerated on build) ---
+android/.gradle/
+android/.kotlin/
+android/build/
+android/app/build/
+android/captures/
+android/local.properties
+*.apk
+*.aab
+*.ap_
+*.dex
+
+# Note: kept on purpose (so the repo builds without rebuilding Mozc) —
+#   android/app/src/main/jniLibs/arm64-v8a/libmozcjni.so  (~16MB)
+#   android/app/src/main/assets/mozc/mozc.data            (~19MB)
+# Both are under GitHub's 100MB/file limit.

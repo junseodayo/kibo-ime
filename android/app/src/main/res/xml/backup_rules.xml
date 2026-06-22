@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 안드로이드 자동 백업(§12 단계0). 클립보드 히스토리만 제외(§8). -->
+<full-backup-content>
+    <exclude domain="file" path="datastore/clipboard.preferences_pb" />
+</full-backup-content>

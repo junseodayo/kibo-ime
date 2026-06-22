@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Settings activity host theme. The actual UI is Compose (KiboTheme);
+         this only styles the window/splash before Compose takes over. -->
+    <style name="Theme.Kibo.Settings" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:statusBarColor">@color/kibo_bg</item>
+        <item name="android:navigationBarColor">@color/kibo_bg</item>
+        <item name="android:windowLightStatusBar">true</item>
+    </style>
+</resources>

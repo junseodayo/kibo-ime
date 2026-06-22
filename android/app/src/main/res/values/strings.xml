@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Kibo 키보</string>
+    <string name="ime_label">Kibo 키보 입력기</string>
+    <string name="settings_title">Kibo 설정</string>
+
+    <string name="subtype_ko">한국어</string>
+    <string name="subtype_en">English</string>
+    <string name="subtype_ja">日本語</string>
+</resources>

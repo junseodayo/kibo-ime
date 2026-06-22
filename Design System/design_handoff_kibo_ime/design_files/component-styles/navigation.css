@@ -1,0 +1,37 @@
+/* KIBO · component styles — navigation */
+
+/* ---- Tabs ---------------------------------------------------------- */
+.kb-tabs { display: flex; gap: var(--space-7); border-bottom: var(--border-w) solid var(--border); }
+.kb-tab {
+  position: relative;
+  border: none; background: transparent; cursor: pointer;
+  font-family: var(--font-sans); font-size: var(--body-sm); font-weight: var(--fw-medium);
+  color: var(--text-muted);
+  padding: var(--space-4) 2px;
+  transition: color var(--dur-fast) var(--ease-out);
+}
+.kb-tab:hover { color: var(--text-strong); }
+.kb-tab[aria-selected="true"] { color: var(--text-strong); font-weight: var(--fw-semibold); }
+.kb-tab[aria-selected="true"]::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 2px;
+  background: var(--accent);
+}
+.kb-tab:disabled { opacity: 0.4; pointer-events: none; }
+
+/* ---- Tab bar (mobile bottom nav) ----------------------------------- */
+.kb-tabbar {
+  display: flex; align-items: stretch;
+  background: var(--surface);
+  border-top: var(--border-w) solid var(--border);
+}
+.kb-tabbar__item {
+  flex: 1 1 0; display: flex; flex-direction: column; align-items: center; gap: 3px;
+  border: none; background: transparent; cursor: pointer;
+  padding: var(--space-4) 0 var(--space-3);
+  color: var(--text-subtle);
+  font-size: 11px; font-weight: var(--fw-medium);
+  transition: color var(--dur-fast) var(--ease-out);
+}
+.kb-tabbar__item[aria-selected="true"] { color: var(--text-strong); }
+.kb-tabbar__item[aria-selected="true"] .kb-tabbar__icon { color: var(--text-strong); }
+.kb-tabbar__icon { color: var(--text-subtle); }

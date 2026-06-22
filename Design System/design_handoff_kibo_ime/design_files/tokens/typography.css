@@ -1,0 +1,39 @@
+/* ===========================================================================
+   KIBO · TYPOGRAPHY
+   One family — Pyeojin Gothic. Editorial scale: tight tracking on display,
+   comfortable line-height on body. Korean + Latin both first-class.
+   =========================================================================== */
+
+:root {
+  /* Families */
+  --font-sans: "Pyeojin Gothic", -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo",
+               "Malgun Gothic", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "SF Mono", ui-monospace, Menlo, Consolas, monospace; /* @kind font */
+
+  /* Weights */
+  --fw-light: 300;      /* @kind font */
+  --fw-regular: 400;    /* @kind font */
+  --fw-medium: 500;     /* @kind font */
+  --fw-semibold: 600;   /* @kind font */
+  --fw-bold: 700;       /* @kind font */
+  --fw-extrabold: 800;  /* @kind font */
+  --fw-black: 900;      /* @kind font */
+
+  /* Type scale — size / line-height / tracking ------------------------- */
+  --display-2xl: 72px;   --display-2xl-lh: 1.04 /* @kind other */;  --display-2xl-ls: -0.03em;   /* @kind other */
+  --display-xl:  56px;   --display-xl-lh:  1.06 /* @kind other */;  --display-xl-ls:  -0.028em;  /* @kind other */
+  --display-lg:  44px;   --display-lg-lh:  1.08 /* @kind other */;  --display-lg-ls:  -0.024em;  /* @kind other */
+
+  --h1: 34px;  --h1-lh: 1.18 /* @kind other */;  --h1-ls: -0.018em;  /* @kind other */
+  --h2: 28px;  --h2-lh: 1.22 /* @kind other */;  --h2-ls: -0.014em;  /* @kind other */
+  --h3: 22px;  --h3-lh: 1.30 /* @kind other */;  --h3-ls: -0.010em;  /* @kind other */
+  --h4: 18px;  --h4-lh: 1.40 /* @kind other */;  --h4-ls: -0.006em;  /* @kind other */
+
+  --body-lg: 18px;  --body-lg-lh: 1.62;  /* @kind other */
+  --body:    16px;  --body-lh:    1.60;  /* @kind other */
+  --body-sm: 14px;  --body-sm-lh: 1.55;  /* @kind other */
+  --caption: 13px;  --caption-lh: 1.45;  /* @kind other */
+
+  --overline: 12px; --overline-lh: 1.30 /* @kind other */; --overline-ls: 0.14em;  /* @kind other */
+  --mono: 13px;     --mono-lh: 1.4;  /* @kind other */
+}

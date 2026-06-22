@@ -1,0 +1,119 @@
+<!-- @dsCard group="Kibo App" viewport="1340x900" name="시안 갤러리 — 기능 명세 전체" subtitle="언어 입력·전환·레이어·툴바 패널·온스크린·사전·클립보드·설정·테마" -->
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Kibo — 기능 시안 갤러리</title>
+<link rel="stylesheet" href="../../styles.css" />
+<style>
+  html, body { margin: 0; }
+  body { background: var(--greige-100); padding: 48px 56px 80px; }
+  .head { max-width: 1100px; margin: 0 auto 8px; }
+  .head h1 { font-size: 40px; font-weight: 800; letter-spacing: -0.03em; color: var(--greige-900); margin: 0; }
+  .head p { font-size: 16px; color: var(--greige-700); margin: 10px 0 0; }
+  .sec { max-width: 1240px; margin: 0 auto; padding: 40px 0 8px; }
+  .sec-h { display: flex; align-items: baseline; gap: 14px; border-bottom: 1.5px solid var(--greige-300); padding-bottom: 12px; margin-bottom: 28px; }
+  .sec-h .n { font-family: var(--font-mono); font-size: 14px; font-weight: 700; color: var(--lime-600); }
+  .sec-h .t { font-size: 24px; font-weight: 800; letter-spacing: -0.02em; color: var(--greige-900); white-space: nowrap; }
+  .sec-h .s { font-size: 14px; color: var(--greige-600); margin-left: auto; white-space: nowrap; }
+  .rail { display: flex; flex-wrap: wrap; gap: 44px 40px; }
+  .frame { flex: none; display: flex; flex-direction: column; gap: 14px; }
+  .cap .t { font-family: var(--font-sans); font-size: 16px; font-weight: 700; letter-spacing: -0.01em; color: var(--greige-900); }
+  .cap .d { font-family: var(--font-sans); font-size: 13px; color: var(--greige-600); margin-top: 2px; max-width: 360px; }
+  .kb-cands::-webkit-scrollbar { display: none; }
+</style>
+</head>
+<body>
+<div class="head">
+  <h1>키보 — 기능 시안 갤러리</h1>
+  <p>기능 정의서(§2–§13)의 주요 기능과 상태를 화면으로 정리했습니다. 기기는 <b>물리 키보드 + 1:1 정사각 화면</b>(BlackBerry Passport / Unihertz 계열) 기준 — 글자키는 하드웨어, 화면엔 앱과 키보 소프트 툴바만 표시됩니다.</p>
+</div>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../../_ds_bundle.js"></script>
+<script type="text/babel" src="icons.jsx?g=4"></script>
+<script type="text/babel" src="PhoneFrame.jsx?g=4"></script>
+<script type="text/babel" src="PassportFrame.jsx?g=4"></script>
+<script type="text/babel" src="Toolbar.jsx?g=4"></script>
+<script type="text/babel" src="ToolbarMockupScreen.jsx?g=4"></script>
+<script type="text/babel" src="InputScreens.jsx?g=4"></script>
+<script type="text/babel" src="Panels.jsx?g=4"></script>
+<script type="text/babel" src="MoreScreens.jsx?g=5"></script>
+<script type="text/babel" src="KeyboardSettingsScreen.jsx?g=4"></script>
+<script type="text/babel" src="OnScreenKeyboardScreen.jsx?g=4"></script>
+<script type="text/babel" src="ClipboardScreen.jsx?g=4"></script>
+<script type="text/babel" src="ClipboardManageScreen.jsx?g=4"></script>
+<script type="text/babel" data-presets="react">
+  const HomeBar = () => (
+    <div style={{ flex: "none", padding: "6px 0 8px" }}>
+      <div style={{ height: 5, width: 134, background: "var(--text-strong)", opacity: 0.85, borderRadius: 3, margin: "0 auto" }} />
+    </div>
+  );
+  const Phone = ({ theme = "light", t, d, children }) => (
+    <div className="frame">
+      <div className="cap"><div className="t">{t}</div><div className="d">{d}</div></div>
+      <PassportFrame theme={theme}>
+        <StatusBar dark={theme === "dark"} />
+        {children}
+      </PassportFrame>
+    </div>
+  );
+  const Section = ({ n, t, s, children }) => (
+    <div className="sec">
+      <div className="sec-h"><span className="n">{n}</span><span className="t">{t}</span><span className="s">{s}</span></div>
+      <div className="rail">{children}</div>
+    </div>
+  );
+
+  function Gallery() {
+    return (
+      <React.Fragment>
+        <Section n="§2–6" t="언어 입력 & 레이어" s="3개국어 + 숫자/심볼">
+          <Phone t="한국어 — 두벌식" d="자모 조합 · 백스페이스 짧게=자모 / 길게=단어"><KoreanInputScreen /></Phone>
+          <Phone t="English — 패스스루" d="자동완성·교정 없음 · Shift/Caps"><EnglishInputScreen /></Phone>
+          <Phone t="日本語 — 변환" d="로마자→가나→한자 · Space 다음 / Enter 확정"><ToolbarMockupScreen /></Phone>
+          <Phone t="숫자 · 심볼 레이어" d="alt/sym · 조합 확정 후 삽입 (SYM 표시)"><SymbolLayerInputScreen /></Phone>
+        </Section>
+
+        <Section n="§2" t="언어 전환키 지정" s="press-to-assign · 충돌 감지">
+          <Phone t="전환키 지정 — 사용 가능" d="fn+Space · 최소 1수정자 · 충돌 없음"><AssignKeyScreen mode="captured" /></Phone>
+          <Phone t="전환키 지정 — 충돌" d="시스템이 선점한 조합 안내"><AssignKeyScreen mode="conflict" /></Phone>
+        </Section>
+
+        <Section n="§9" t="툴바 패널" s="기호 · 이모지 · 클립보드">
+          <Phone t="이모지 패널" d="툴바 이모지 버튼 → 그리드"><EmojiPanelScreen /></Phone>
+          <Phone t="기호 패널" d="툴바 기호 버튼 → 통화·화살표·일본어 기호"><SymbolPanelScreen /></Phone>
+          <Phone t="클립보드 — 사용 중" d="입력창에서 키보드 위로 · 탭하여 붙여넣기"><ClipboardScreen /></Phone>
+        </Section>
+
+        <Section n="§10" t="온스크린 키보드" s="비상 폴백 · 언어별">
+          <Phone t="온스크린 — 한국어" d="두벌식 소프트 키보드"><OnScreenKeyboardScreen lang="ko" /></Phone>
+          <Phone t="온스크린 — English" d="QWERTY · Shift/⌫"><OnScreenKeyboardScreen lang="en" showBanner={false} /></Phone>
+          <Phone t="온스크린 — 日本語" d="로마자 QWERTY + 변환 후보"><OnScreenKeyboardScreen lang="ja" showBanner={false} /></Phone>
+        </Section>
+
+        <Section n="§7–8" t="데이터 관리" s="사용자 사전 · 클립보드">
+          <Phone t="사용자 사전" d="한·영·일 커스텀 단어 · 일본어 변환 보정"><UserDictScreen /></Phone>
+          <Phone theme="dark" t="클립보드 관리" d="삭제·고정·순서 · 프리셋 · 보관 설정"><ClipboardManageScreen /></Phone>
+        </Section>
+
+        <Section n="§2·11" t="설정" s="언어 순서 · 전환키 · 앱별 언어">
+          <Phone theme="dark" t="키보드 설정" d="언어 순서(드래그) · fn+Space · 앱별 매핑"><KeyboardSettingsScreen /></Phone>
+          <Phone t="테마 · 색상 (추후)" d="툴바·온스크린 색상 컬러피커"><ThemeScreen /></Phone>
+        </Section>
+      </React.Fragment>
+    );
+  }
+  const mount = () => {
+    const ok = ["PassportFrame","KoreanInputScreen","EnglishInputScreen","SymbolLayerInputScreen","ToolbarMockupScreen","AssignKeyScreen","EmojiPanelScreen","SymbolPanelScreen","ClipboardScreen","OnScreenKeyboardScreen","UserDictScreen","ClipboardManageScreen","KeyboardSettingsScreen","ThemeScreen"].every((k) => window[k]);
+    if (!ok) { setTimeout(mount, 30); return; }
+    ReactDOM.createRoot(document.getElementById("root")).render(<Gallery />);
+  };
+  mount();
+</script>
+</body>
+</html>

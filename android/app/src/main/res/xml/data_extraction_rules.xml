@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 클립보드 히스토리는 백업/전송 제외(§8). DataStore 파일명 clipboard.preferences_pb 제외. -->
+<data-extraction-rules>
+    <cloud-backup>
+        <exclude domain="file" path="datastore/clipboard.preferences_pb" />
+    </cloud-backup>
+    <device-transfer>
+        <exclude domain="file" path="datastore/clipboard.preferences_pb" />
+    </device-transfer>
+</data-extraction-rules>

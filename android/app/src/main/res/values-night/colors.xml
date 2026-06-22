@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- dark bg (greige-950) -->
+    <color name="kibo_bg">#100F0C</color>
+    <color name="kibo_accent">#C8F03C</color>
+</resources>

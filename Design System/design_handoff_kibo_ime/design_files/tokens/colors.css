@@ -1,0 +1,219 @@
+/* ===========================================================================
+   KIBO · COLORS
+   Tone-on-tone warm greige neutrals + a single acid-lime accent.
+   Base = quiet. Lime appears only where attention must go (primary action,
+   active / focused state, the "live" key). Light + dark; system-default.
+   =========================================================================== */
+
+:root {
+  /* --- Base palette: Greige (warm neutral ramp) ------------------------- */
+  --greige-50:  #FAF9F6;
+  --greige-100: #F2F0EA;
+  --greige-150: #ECE9E1;
+  --greige-200: #E7E4DD;
+  --greige-300: #D8D4C9;
+  --greige-400: #BBB6A9;
+  --greige-500: #9A958A;
+  --greige-600: #7A766C;
+  --greige-700: #5B584F;
+  --greige-800: #3A382F;
+  --greige-900: #1C1A16;
+  --greige-950: #100F0C;
+
+  /* --- Accent: Acid Lime ------------------------------------------------ */
+  --lime-50:  #F6FBE6;
+  --lime-100: #ECF7C6;
+  --lime-300: #DAF27E;
+  --lime-400: #C8F03C;   /* core accent */
+  --lime-500: #B4DC2A;   /* hover / pressed */
+  --lime-600: #97BA15;   /* on light, for accent text/icons that need AA */
+  --lime-700: #6E8A0C;
+
+  /* --- Semantic hues (muted, same warmth family) ------------------------ */
+  --red-500:    #D9442B;
+  --red-600:    #B7341E;
+  --amber-500:  #E0A33A;
+  --amber-600:  #C2851C;
+  --green-500:  #4F9D6B;
+  --green-600:  #3C8054;
+  --blue-500:   #4A6CF0;   /* informational only */
+
+  /* === SEMANTIC ALIASES — LIGHT (default) ============================== */
+  /* Surfaces */
+  --bg:               var(--greige-50);
+  --surface:          #FFFFFF;
+  --surface-subtle:   var(--greige-100);
+  --surface-sunken:   var(--greige-150);
+  --surface-inverse:  var(--greige-900);
+
+  /* Text */
+  --text-strong:      var(--greige-900);
+  --text:             var(--greige-800);
+  --text-muted:       var(--greige-600);
+  --text-subtle:      var(--greige-500);
+  --text-inverse:     var(--greige-50);
+  --text-on-accent:   var(--greige-900);
+
+  /* Borders & lines */
+  --border:           var(--greige-200);
+  --border-strong:    var(--greige-300);
+  --border-inverse:   var(--greige-800);
+
+  /* Accent roles */
+  --accent:           var(--lime-400);
+  --accent-hover:     var(--lime-500);
+  --accent-pressed:   var(--lime-600);
+  --accent-subtle:    var(--lime-100);
+  --accent-text:      var(--lime-700);   /* lime as text/icon on light bg, AA */
+  --accent-ring:      color-mix(in oklch, var(--lime-400) 55%, transparent);
+
+  /* Feedback */
+  --danger:           var(--red-500);
+  --danger-text:      var(--red-600);
+  --danger-subtle:    #FBEAE6;
+  --warning:          var(--amber-500);
+  --warning-text:     var(--amber-600);
+  --warning-subtle:   #FBF2DF;
+  --success:          var(--green-500);
+  --success-text:     var(--green-600);
+  --success-subtle:   #E6F2EB;
+  --info:             var(--blue-500);
+
+  /* Focus ring */
+  --focus-ring:       var(--accent-ring);
+
+  color-scheme: light;
+}
+
+/* ---------------------------------------------------------------------------
+   THEME RESOLUTION (order matters; all single-selector scopes)
+   1. :root above ............ light, the default
+   2. @media :root ........... system dark (no explicit theme set)
+   3. [data-theme="light"] ... force light — placed after the media query so it
+                               wins on a system-dark device (equal specificity)
+   4. [data-theme="dark"] .... force dark
+   --------------------------------------------------------------------------- */
+
+/* === DARK — system default (applies when no explicit theme is set) ===== */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg:               var(--greige-950);
+    --surface:          #1A1813;
+    --surface-subtle:   #211F18;
+    --surface-sunken:   #141310;
+    --surface-inverse:  var(--greige-50);
+
+    --text-strong:      var(--greige-50);
+    --text:             var(--greige-150);
+    --text-muted:       var(--greige-400);
+    --text-subtle:      var(--greige-500);
+    --text-inverse:     var(--greige-900);
+    --text-on-accent:   var(--greige-950);
+
+    --border:           #2C2A22;
+    --border-strong:    #3A382F;
+    --border-inverse:   var(--greige-200);
+
+    --accent-hover:     var(--lime-300);
+    --accent-pressed:   var(--lime-500);
+    --accent-subtle:    #2A3310;
+    --accent-text:      var(--lime-400);
+
+    --danger:           #E5604A;
+    --danger-text:      #EE8674;
+    --danger-subtle:    #2E1A16;
+    --warning:          #E6B25A;
+    --warning-text:     #ECC180;
+    --warning-subtle:   #2C2412;
+    --success:          #62B083;
+    --success-text:     #84C39E;
+    --success-subtle:   #16241C;
+    --info:             #7C96F5;
+
+    color-scheme: dark;
+  }
+}
+
+/* === LIGHT — explicit opt-in (mirrors the :root default; overrides system dark) */
+[data-theme="light"] {
+  --bg:               var(--greige-50);
+  --surface:          #FFFFFF;
+  --surface-subtle:   var(--greige-100);
+  --surface-sunken:   var(--greige-150);
+  --surface-inverse:  var(--greige-900);
+
+  --text-strong:      var(--greige-900);
+  --text:             var(--greige-800);
+  --text-muted:       var(--greige-600);
+  --text-subtle:      var(--greige-500);
+  --text-inverse:     var(--greige-50);
+  --text-on-accent:   var(--greige-900);
+
+  --border:           var(--greige-200);
+  --border-strong:    var(--greige-300);
+  --border-inverse:   var(--greige-800);
+
+  --accent:           var(--lime-400);
+  --accent-hover:     var(--lime-500);
+  --accent-pressed:   var(--lime-600);
+  --accent-subtle:    var(--lime-100);
+  --accent-text:      var(--lime-700);
+  --accent-ring:      color-mix(in oklch, var(--lime-400) 55%, transparent);
+
+  --danger:           var(--red-500);
+  --danger-text:      var(--red-600);
+  --danger-subtle:    #FBEAE6;
+  --warning:          var(--amber-500);
+  --warning-text:     var(--amber-600);
+  --warning-subtle:   #FBF2DF;
+  --success:          var(--green-500);
+  --success-text:     var(--green-600);
+  --success-subtle:   #E6F2EB;
+  --info:             var(--blue-500);
+
+  --focus-ring:       var(--accent-ring);
+
+  color-scheme: light;
+}
+
+/* === DARK — explicit opt-in ============================================ */
+[data-theme="dark"] {
+  --bg:               var(--greige-950);
+  --surface:          #1A1813;
+  --surface-subtle:   #211F18;
+  --surface-sunken:   #141310;
+  --surface-inverse:  var(--greige-50);
+
+  --text-strong:      var(--greige-50);
+  --text:             var(--greige-150);
+  --text-muted:       var(--greige-400);
+  --text-subtle:      var(--greige-500);
+  --text-inverse:     var(--greige-900);
+  --text-on-accent:   var(--greige-950);
+
+  --border:           #2C2A22;
+  --border-strong:    #3A382F;
+  --border-inverse:   var(--greige-200);
+
+  --accent:           var(--lime-400);
+  --accent-hover:     var(--lime-300);
+  --accent-pressed:   var(--lime-500);
+  --accent-subtle:    #2A3310;
+  --accent-text:      var(--lime-400);
+  --accent-ring:      color-mix(in oklch, var(--lime-400) 50%, transparent);
+
+  --danger:           #E5604A;
+  --danger-text:      #EE8674;
+  --danger-subtle:    #2E1A16;
+  --warning:          #E6B25A;
+  --warning-text:     #ECC180;
+  --warning-subtle:   #2C2412;
+  --success:          #62B083;
+  --success-text:     #84C39E;
+  --success-subtle:   #16241C;
+  --info:             #7C96F5;
+
+  --focus-ring:       var(--accent-ring);
+
+  color-scheme: dark;
+}

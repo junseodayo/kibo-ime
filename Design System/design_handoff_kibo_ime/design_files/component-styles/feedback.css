@@ -1,0 +1,83 @@
+/* KIBO · component styles — feedback & overlays */
+
+/* ---- Tooltip ------------------------------------------------------- */
+.kb-tooltip-wrap { position: relative; display: inline-flex; }
+.kb-tooltip {
+  position: absolute; z-index: 50;
+  bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%);
+  background: var(--surface-inverse); color: var(--text-inverse);
+  font-size: var(--caption); font-weight: var(--fw-medium);
+  padding: 6px 10px; border-radius: var(--radius-sm);
+  white-space: nowrap; pointer-events: none;
+  box-shadow: var(--shadow-md);
+  opacity: 0; transition: opacity var(--dur-fast) var(--ease-out);
+}
+.kb-tooltip-wrap:hover .kb-tooltip { opacity: 1; }
+
+/* ---- Dialog -------------------------------------------------------- */
+.kb-dialog-overlay {
+  position: fixed; inset: 0; z-index: 100;
+  background: color-mix(in oklch, var(--greige-950) 45%, transparent);
+  backdrop-filter: blur(2px);
+  display: flex; align-items: center; justify-content: center;
+  padding: var(--space-7);
+  animation: kb-fade var(--dur) var(--ease-out);
+}
+.kb-dialog {
+  width: 100%; max-width: 440px;
+  background: var(--surface);
+  border: var(--border-w) solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-overlay);
+  padding: var(--space-8);
+  animation: kb-pop var(--dur) var(--ease-out);
+}
+.kb-dialog__title { font-size: var(--h3); font-weight: var(--fw-bold); letter-spacing: var(--h3-ls); color: var(--text-strong); }
+.kb-dialog__body { margin-top: var(--space-4); color: var(--text-muted); font-size: var(--body-sm); line-height: 1.6; }
+.kb-dialog__actions { margin-top: var(--space-8); display: flex; justify-content: flex-end; gap: var(--space-4); }
+
+/* ---- Toast --------------------------------------------------------- */
+.kb-toast {
+  display: inline-flex; align-items: center; gap: var(--space-4);
+  min-width: 280px; max-width: 420px;
+  padding: var(--space-4) var(--space-5);
+  background: var(--surface-inverse); color: var(--text-inverse);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  font-size: var(--body-sm);
+  animation: kb-toast-in var(--dur-slow) var(--ease-out);
+}
+.kb-toast__icon { flex: none; display: inline-flex; }
+.kb-toast--success .kb-toast__icon { color: var(--success); }
+.kb-toast--danger .kb-toast__icon { color: var(--danger); }
+.kb-toast--accent .kb-toast__icon { color: var(--accent); }
+.kb-toast__body { flex: 1 1 auto; }
+.kb-toast__close { border: none; background: transparent; color: inherit; opacity: 0.6; cursor: pointer; padding: 2px; display: inline-flex; }
+.kb-toast__close:hover { opacity: 1; }
+
+/* ---- Banner / inline alert ----------------------------------------- */
+.kb-banner {
+  display: flex; align-items: flex-start; gap: var(--space-4);
+  padding: var(--space-5);
+  border-radius: var(--radius-md);
+  border: var(--border-w) solid var(--border);
+  background: var(--surface-subtle);
+  font-size: var(--body-sm); line-height: 1.55; color: var(--text);
+}
+.kb-banner__icon { flex: none; margin-top: 1px; color: var(--text-muted); }
+.kb-banner--accent { background: var(--accent-subtle); border-color: transparent; }
+.kb-banner--accent .kb-banner__icon { color: var(--accent-text); }
+.kb-banner--success { background: var(--success-subtle); border-color: transparent; }
+.kb-banner--success .kb-banner__icon { color: var(--success-text); }
+.kb-banner--warning { background: var(--warning-subtle); border-color: transparent; }
+.kb-banner--warning .kb-banner__icon { color: var(--warning-text); }
+.kb-banner--danger { background: var(--danger-subtle); border-color: transparent; }
+.kb-banner--danger .kb-banner__icon { color: var(--danger-text); }
+
+/* ---- Progress ------------------------------------------------------ */
+.kb-progress { width: 100%; height: 6px; background: var(--surface-sunken); border-radius: var(--radius-pill); overflow: hidden; }
+.kb-progress__fill { height: 100%; background: var(--accent); border-radius: var(--radius-pill); transition: width var(--dur-slow) var(--ease-out); }
+
+@keyframes kb-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes kb-pop { from { opacity: 0; transform: translateY(8px) scale(0.98); } to { opacity: 1; transform: none; } }
+@keyframes kb-toast-in { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }

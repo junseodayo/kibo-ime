@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Kibo IME 정의. 물리 키보드 1차 + 온스크린 폴백.
+     설정 진입점은 SettingsActivity. 3개 서브타입(한/영/일)을 모드 인디케이터와 연동. -->
+<input-method xmlns:android="http://schemas.android.com/apk/res/android"
+    android:settingsActivity="com.kibo.ime.ui.settings.SettingsActivity"
+    android:supportsSwitchingToNextInputMethod="true"
+    android:isDefault="false">
+
+    <subtype
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/subtype_ko"
+        android:imeSubtypeLocale="ko_KR"
+        android:imeSubtypeMode="keyboard"
+        android:imeSubtypeExtraValue="lang=ko" />
+    <subtype
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/subtype_en"
+        android:imeSubtypeLocale="en_US"
+        android:imeSubtypeMode="keyboard"
+        android:imeSubtypeExtraValue="lang=en" />
+    <subtype
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/subtype_ja"
+        android:imeSubtypeLocale="ja_JP"
+        android:imeSubtypeMode="keyboard"
+        android:imeSubtypeExtraValue="lang=ja" />
+</input-method>

@@ -1,0 +1,59 @@
+<!-- @dsCard group="Kibo App" viewport="1000x940" name="클립보드 — 사용 중 & 관리" subtitle="입력 중 키보드 위 리스트 + 앱 내 전용 관리 화면" -->
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Kibo — 클립보드 시안</title>
+<link rel="stylesheet" href="../../styles.css" />
+<style>
+  html, body { margin: 0; }
+  body { min-height: 100vh; box-sizing: border-box; background: radial-gradient(120% 90% at 50% -10%, var(--greige-100), var(--greige-200) 70%); }
+  .stage { width: max-content; min-width: 100%; box-sizing: border-box; padding: 56px 64px; }
+  .rail { display: flex; align-items: flex-start; gap: 56px; }
+  .frame { flex: none; display: flex; flex-direction: column; gap: 16px; }
+  .cap .t { font-family: var(--font-sans); font-size: 19px; font-weight: 800; letter-spacing: -0.02em; color: var(--greige-900); }
+  .cap .d { font-family: var(--font-sans); font-size: 14px; color: var(--greige-700); margin-top: 3px; }
+  .kb-cands::-webkit-scrollbar { display: none; }
+</style>
+</head>
+<body>
+<div class="stage"><div class="rail" id="root"></div></div>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../../_ds_bundle.js"></script>
+<script type="text/babel" src="icons.jsx?v=11"></script>
+<script type="text/babel" src="PhoneFrame.jsx?v=11"></script>
+<script type="text/babel" src="PassportFrame.jsx?v=11"></script>
+<script type="text/babel" src="Toolbar.jsx?v=11"></script>
+<script type="text/babel" src="ClipboardScreen.jsx?v=11"></script>
+<script type="text/babel" src="ClipboardManageScreen.jsx?v=11"></script>
+<script type="text/babel" data-presets="react">
+  const HomeBar = () => (
+    <div style={{ flex: "none", padding: "6px 0 8px" }}>
+      <div style={{ height: 5, width: 134, background: "var(--text-strong)", opacity: 0.85, borderRadius: 3, margin: "0 auto" }} />
+    </div>
+  );
+  function Clip() {
+    return (
+      <React.Fragment>
+        <div className="frame">
+          <div className="cap"><div className="t">① 사용 중 — 입력창에서</div><div className="d">툴바 클립보드 버튼 → 키보드 위로 리스트, 탭하면 붙여넣기</div></div>
+          <PassportFrame theme="light"><StatusBar /><ClipboardScreen /></PassportFrame>
+        </div>
+        <div className="frame">
+          <div className="cap"><div className="t">② 관리 — 앱 안에서</div><div className="d">삭제·고정·순서 변경 · 프리셋 편집 · 보관 설정</div></div>
+          <PassportFrame theme="light"><StatusBar /><ClipboardManageScreen /></PassportFrame>
+        </div>
+      </React.Fragment>
+    );
+  }
+  const mount = () => {
+    if (!window.PassportFrame || !window.ClipboardScreen || !window.ClipboardManageScreen) { setTimeout(mount, 30); return; }
+    ReactDOM.createRoot(document.getElementById("root")).render(<Clip />);
+  };
+  mount();
+</script>
+</body>
+</html>
