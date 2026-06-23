@@ -301,6 +301,8 @@ class KiboInputMethodService : InputMethodService(),
         updateMetaIndicators(event)
         // Consume the up-event of the switch combo so the host never sees it.
         if (matchesSwitchKey(keyCode, event)) return true
+        // Match the consumed SYM down-event so the OS symbol-picker stays suppressed.
+        if (keyCode == KeyEvent.KEYCODE_SYM) return true
         return super.onKeyUp(keyCode, event)
     }
 
@@ -313,7 +315,12 @@ class KiboInputMethodService : InputMethodService(),
                 heldModifierKey = keyCode
                 heldModifierIsTap = true
             }
-            return false  // let the OS track real meta-state for hold-combos
+            // Consume SYM so the OS never pops up its own symbol-picker grid: Kibo uses SYM as
+            // its symbol-layer toggle (tap handled in onKeyUp). Native meta-state tracking is
+            // unaffected by consuming the event, so SYM hold-combos still set META_SYM_ON on the
+            // next key. Shift/Alt still pass through so the OS resolves uppercase / printed
+            // symbols via the Key Character Map.
+            return keyCode == KeyEvent.KEYCODE_SYM
         }
         // Any non-modifier key means a held modifier is part of a hold-combo, not a tap.
         heldModifierIsTap = false
@@ -335,10 +342,16 @@ class KiboInputMethodService : InputMethodService(),
         when (keyCode) {
             KeyEvent.KEYCODE_DEL -> { handleBackspace(event); return true }
             KeyEvent.KEYCODE_SPACE -> {
-                val consumed = controller.engine.onSpace(bridge)
+                // Insert the space through the InputConnection (commitText) instead of
+                // passing the raw hardware key event on to the app. Some editors (e.g. KakaoTalk)
+                // drop the first space that arrives right after a finishComposingText — the field
+                // appears to lose focus and only the *second* press registers. Committing the
+                // space as text — the same path the on-screen Space key already uses — makes it
+                // land on the first press everywhere.
+                if (!controller.engine.onSpace(bridge)) bridge.commitText(" ")
                 clearOneShotModifiers()
                 refreshCandidates()
-                return consumed
+                return true
             }
             KeyEvent.KEYCODE_ENTER -> {
                 val consumed = controller.engine.onEnter(bridge)
