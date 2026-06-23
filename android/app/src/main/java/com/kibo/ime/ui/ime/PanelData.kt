@@ -39,7 +39,7 @@ object EmojiData {
 /** Symbol panel content — includes ₩ € ¥, arrows, and a 일본어 기호 set (spec §9). */
 object SymbolData {
     val categories: List<Pair<String, List<String>>> = listOf(
-        "자주" to "! ? . , … · : ; ' \" ( ) [ ] { } - – — _ / \\ & @ # % * + = ~ ^ |"
+        "자주" to "! ? . , … · : ; ' \" ` ( ) [ ] { } < > - – — _ / \\ | & @ # % ^ * + = ~ § ¶ •"
             .split(" "),
         "통화" to "₩ \$ € ¥ £ ¢ ₿ ₫ ₽ ₹ ₺ ₴ ₦ ฿ ₱ № % ‰ ™ © ®"
             .split(" "),
