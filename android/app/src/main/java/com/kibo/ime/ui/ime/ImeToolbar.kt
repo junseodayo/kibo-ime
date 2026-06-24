@@ -27,9 +27,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.luminance
-import androidx.compose.ui.text.PlatformTextStyle
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -41,9 +38,9 @@ import com.kibo.ime.ui.theme.KiboTheme
 import com.kibo.ime.ui.theme.Radius
 import com.kibo.ime.ui.theme.Space
 
-/** Mode indicator — shows current language + CAPS/SYM, tap a segment to switch (spec §2). */
+/** Mode indicator — always shows current language + CAPS/SYM (spec §2, Toolbar.jsx). */
 @Composable
-fun ModeIndicator(language: Language, caps: Boolean, sym: Boolean, onSelect: (Language) -> Unit) {
+fun ModeIndicator(language: Language, caps: Boolean, sym: Boolean) {
     val c = KiboTheme.colors
     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.s3)) {
         Row(
@@ -55,20 +52,17 @@ fun ModeIndicator(language: Language, caps: Boolean, sym: Boolean, onSelect: (La
                 Box(
                     contentAlignment = Alignment.Center,
                     modifier = Modifier
-                        .defaultMinSize(minWidth = 24.dp)
-                        .height(22.dp)
+                        .defaultMinSize(minWidth = 30.dp)
+                        .height(28.dp)
                         .clip(RoundedCornerShape(3.dp))
                         .background(if (active) c.accent else Color.Transparent)
-                        .clickable { onSelect(lang) }
-                        .padding(horizontal = Space.s2),
+                        .padding(horizontal = Space.s3),
                 ) {
                     Text(
                         text = lang.indicator,
-                        color = if (active) onAccent() else c.textSubtle,
+                        color = if (active) c.textOnAccent else c.textSubtle,
                         fontWeight = FontWeight.Bold,
-                        fontSize = 12.sp,
-                        // Drop the legacy font padding so CJK glyphs sit vertically centered.
-                        style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)),
+                        fontSize = 14.sp,
                     )
                 }
             }
@@ -153,38 +147,26 @@ fun KiboToolbar(state: ImeUiState, actions: ImeActions) {
         horizontalArrangement = Arrangement.spacedBy(4.dp),
         modifier = Modifier
             .fillMaxWidth()
-            .background(c.surface)   // our toolbar row is the surface (white); accent is the strip below
-            // Two-row layout (toolbar sits above the system nav bar). These insets align our
-            // indicator (left) over the chevron and our icons (right) over the globe below.
-            .padding(start = SystemNavLeftInset, end = SystemNavRightInset, top = Space.s3, bottom = Space.s3),
+            .background(c.surface)
+            .padding(horizontal = 10.dp, vertical = Space.s3),
     ) {
-        ModeIndicator(state.language, state.caps, state.symLayer, actions::switchLanguage)
+        ModeIndicator(state.language, state.caps, state.symLayer)
         Spacer(Modifier.weight(1f))
-        IconSlot(active = state.oskVisible, size = 34.dp, onClick = actions::toggleOsk) {
-            Icon(Icons.Outlined.Keyboard, "온스크린 키보드", tint = iconTint(state.oskVisible), modifier = Modifier.size(18.dp))
+        IconSlot(active = state.oskVisible, onClick = actions::toggleOsk) {
+            Icon(Icons.Outlined.Keyboard, "온스크린 키보드", tint = iconTint(state.oskVisible), modifier = Modifier.size(21.dp))
         }
-        IconSlot(active = state.panel == ImePanel.SYMBOL, size = 34.dp, onClick = { actions.openPanel(ImePanel.SYMBOL) }) {
-            Icon(Icons.Outlined.Tag, "기호", tint = iconTint(state.panel == ImePanel.SYMBOL), modifier = Modifier.size(18.dp))
+        IconSlot(active = state.panel == ImePanel.SYMBOL, onClick = { actions.openPanel(ImePanel.SYMBOL) }) {
+            Icon(Icons.Outlined.Tag, "기호", tint = iconTint(state.panel == ImePanel.SYMBOL), modifier = Modifier.size(21.dp))
         }
-        IconSlot(active = state.panel == ImePanel.EMOJI, size = 34.dp, onClick = { actions.openPanel(ImePanel.EMOJI) }) {
-            Icon(Icons.Outlined.SentimentSatisfiedAlt, "이모지", tint = iconTint(state.panel == ImePanel.EMOJI), modifier = Modifier.size(18.dp))
+        IconSlot(active = state.panel == ImePanel.EMOJI, onClick = { actions.openPanel(ImePanel.EMOJI) }) {
+            Icon(Icons.Outlined.SentimentSatisfiedAlt, "이모지", tint = iconTint(state.panel == ImePanel.EMOJI), modifier = Modifier.size(21.dp))
         }
-        IconSlot(active = state.panel == ImePanel.CLIPBOARD, size = 34.dp, onClick = { actions.openPanel(ImePanel.CLIPBOARD) }) {
-            Icon(Icons.Outlined.ContentPaste, "클립보드", tint = iconTint(state.panel == ImePanel.CLIPBOARD), modifier = Modifier.size(18.dp))
+        IconSlot(active = state.panel == ImePanel.CLIPBOARD, onClick = { actions.openPanel(ImePanel.CLIPBOARD) }) {
+            Icon(Icons.Outlined.ContentPaste, "클립보드", tint = iconTint(state.panel == ImePanel.CLIPBOARD), modifier = Modifier.size(20.dp))
         }
     }
 }
 
 @Composable
 private fun iconTint(active: Boolean): Color =
-    if (active) onAccent() else Color(0xFF666666)  // #666 on the white toolbar; contrast color on the accent highlight
-
-/** Color that contrasts the accent fill (active states): #666 on a light accent, white on a dark one. */
-@Composable
-private fun onAccent(): Color =
-    if (KiboTheme.colors.accent.luminance() > 0.5f) Color(0xFF666666) else Color.White
-
-// Left/right alignment of our toolbar items over the system nav buttons one row below
-// (chevron left, globe right). Tune per device.
-private val SystemNavLeftInset = 16.dp
-private val SystemNavRightInset = 16.dp
+    if (active) KiboTheme.colors.textOnAccent else KiboTheme.colors.textMuted
