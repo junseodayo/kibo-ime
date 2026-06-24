@@ -7,14 +7,9 @@ import android.text.InputType
 import android.view.KeyEvent
 import android.view.View
 import android.view.inputmethod.EditorInfo
-import android.inputmethodservice.InputMethodService
-import android.content.res.Configuration
-import android.os.Build
+import android.view.inputmethod.InputMethodService
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.unit.dp
-import androidx.core.view.WindowCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
@@ -83,20 +78,7 @@ class KiboInputMethodService : InputMethodService(),
     private var lastUsedLanguage = Language.KOREAN
 
     private var passwordField = false
-
-    // Hold-to-delete-words throttle: delete one word per this interval rather than once
-    // per OS auto-repeat (which clears everything almost instantly).
-    private val wordDeleteIntervalMs = 200L
-    private var lastWordDeleteTime = 0L
-
-    // --- Tap / sticky modifier state (one-shot + double-tap-lock) -----------
-    private enum class ModState { OFF, ONESHOT, LOCKED }
-    private var altLayer = ModState.OFF
-    private var shiftMod = ModState.OFF
-    // Tracks a modifier key currently held alone, so onKeyUp can tell a *tap*
-    // (press + release with nothing in between) from a normal hold-combo.
-    private var heldModifierKey = 0
-    private var heldModifierIsTap = false
+    private var longBackspaceHandled = false
 
     private val clipboardManager by lazy { getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager }
     private val clipListener = ClipboardManager.OnPrimaryClipChangedListener {
@@ -166,39 +148,6 @@ class KiboInputMethodService : InputMethodService(),
     override fun onEvaluateFullscreenMode() = false
 
     override fun onCreateInputView(): View {
-        // The bottom strip behind the system nav buttons takes our accent (point) color;
-        // the nav-bar icon contrast is picked from the accent's brightness so they stay visible.
-        val accentArgb = uiState.accentColor ?: 0xFFC8F03C.toInt()  // default = Lime400
-        val accentIsLight = Color(accentArgb).luminance() > 0.5f
-
-        // Compose installs its recomposer by walking UP from the IME window's
-        // content root (android:id/parentPanel), not from our ComposeView. So the
-        // ViewTree owners must also be set on an ancestor — the window decorView —
-        // or it throws "ViewTreeLifecycleOwner not found". (Setting them on the
-        // ComposeView alone is not enough for a non-Activity window.)
-        window?.window?.let { w ->
-            w.decorView.setViewTreeLifecycleOwner(this@KiboInputMethodService)
-            w.decorView.setViewTreeViewModelStoreOwner(this@KiboInputMethodService)
-            w.decorView.setViewTreeSavedStateRegistryOwner(this@KiboInputMethodService)
-            // We can't hide the system IME nav bar on this device, so keep it — just make
-            // it transparent with no contrast scrim, so our toolbar surface fills behind
-            // it cleanly. The toolbar is lifted above it via the inset padding below.
-            w.navigationBarColor = android.graphics.Color.TRANSPARENT
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                w.isNavigationBarContrastEnforced = false
-            }
-            // The bottom strip shows our accent color, so set the nav-bar icon contrast
-            // from the accent's brightness (dark icons on a light accent, light on dark).
-            WindowCompat.getInsetsController(w, w.decorView)
-                .isAppearanceLightNavigationBars = accentIsLight
-        }
-
-        // Height of the accent strip behind the system nav buttons (nav-bar height + a bit
-        // extra). Drawn inside Compose (passed to ImeRoot) so it recolors live when the
-        // accent changes — a one-time View.setBackgroundColor would not.
-        val density = resources.displayMetrics.density
-        val navStripDp = (systemNavBarHeightPx() / density + 12f).dp
-
         val composeView = ComposeView(this).apply {
             setViewTreeLifecycleOwner(this@KiboInputMethodService)
             setViewTreeViewModelStoreOwner(this@KiboInputMethodService)
@@ -206,7 +155,7 @@ class KiboInputMethodService : InputMethodService(),
             setContent {
                 val accent = uiState.accentColor?.let { Color(it) }
                 KiboTheme(accentOverride = accent) {
-                    ImeRoot(uiState, actions, navStripDp)
+                    ImeRoot(uiState, actions)
                 }
             }
         }
@@ -214,31 +163,9 @@ class KiboInputMethodService : InputMethodService(),
         return composeView
     }
 
-    /** Match the system nav-bar icon contrast to the current accent (re-applied when it changes). */
-    private fun applyNavBarIconContrast() {
-        val accentArgb = uiState.accentColor ?: 0xFFC8F03C.toInt()
-        window?.window?.let { w ->
-            WindowCompat.getInsetsController(w, w.decorView)
-                .isAppearanceLightNavigationBars = Color(accentArgb).luminance() > 0.5f
-        }
-    }
-
-    /** System navigation-bar height (px) from platform resources; 0 if not present. */
-    private fun systemNavBarHeightPx(): Int {
-        val id = resources.getIdentifier("navigation_bar_height", "dimen", "android")
-        return if (id > 0) resources.getDimensionPixelSize(id) else 0
-    }
-
     override fun onStartInput(info: EditorInfo?, restarting: Boolean) {
         super.onStartInput(info, restarting)
         passwordField = info != null && isPasswordField(info)
-
-        // Numeric fields (OTP / phone / PIN): auto-lock the alt layer so the digits
-        // printed on the keys type directly without holding alt (spec §6).
-        altLayer = if (info != null && isNumericField(info)) ModState.LOCKED else ModState.OFF
-        shiftMod = ModState.OFF
-        uiState.symLayer = altLayer != ModState.OFF
-        uiState.caps = false
 
         // App-specific default language (spec §11).
         val targetLang = if (appLangMasterOn) {
@@ -253,8 +180,8 @@ class KiboInputMethodService : InputMethodService(),
     override fun onStartInputView(info: EditorInfo?, restarting: Boolean) {
         super.onStartInputView(info, restarting)
         uiState.panel = ImePanel.NONE
+        longBackspaceHandled = false
         runCatching { clipboardManager.addPrimaryClipChangedListener(clipListener) }
-        applyNavBarIconContrast()  // refresh in case the accent changed in settings
         syncModeState()
     }
 
@@ -262,8 +189,6 @@ class KiboInputMethodService : InputMethodService(),
         super.onFinishInputView(finishingInput)
         runCatching { clipboardManager.removePrimaryClipChangedListener(clipListener) }
         controller.engine.reset()
-        altLayer = ModState.OFF
-        shiftMod = ModState.OFF
         uiState.panel = ImePanel.NONE
         uiState.candidates = null
     }
@@ -282,80 +207,37 @@ class KiboInputMethodService : InputMethodService(),
     override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
         if (handleKeyDown(keyCode, event)) return true
         // Not consumed: commit any composition so passthrough chars land cleanly.
-        // (Modifier keys must NOT finish the composition — they may precede more input.)
-        if (!isModifierKeyCode(keyCode) && controller.engine.isComposing) {
-            controller.engine.finishComposition(bridge)
-        }
+        if (controller.engine.isComposing) controller.engine.finishComposition(bridge)
         return super.onKeyDown(keyCode, event)
     }
 
     override fun onKeyUp(keyCode: Int, event: KeyEvent): Boolean {
-        // A modifier released with nothing pressed in between = a tap: cycle its
-        // state OFF → one-shot → locked → OFF (spec §6 tap/sticky modifiers).
-        if (isModifierKeyCode(keyCode) && keyCode == heldModifierKey) {
-            val wasTap = heldModifierIsTap
-            heldModifierKey = 0
-            heldModifierIsTap = false
-            if (wasTap) onModifierTap(keyCode)
-        }
         updateMetaIndicators(event)
+        if (keyCode == KeyEvent.KEYCODE_DEL) longBackspaceHandled = false
         // Consume the up-event of the switch combo so the host never sees it.
         if (matchesSwitchKey(keyCode, event)) return true
-        // Match the consumed SYM down-event so the OS symbol-picker stays suppressed.
-        if (keyCode == KeyEvent.KEYCODE_SYM) return true
         return super.onKeyUp(keyCode, event)
     }
 
     private fun handleKeyDown(keyCode: Int, event: KeyEvent): Boolean {
         updateMetaIndicators(event)
 
-        // Track modifier keys so onKeyUp can detect a tap vs. a hold-combo.
-        if (isModifierKeyCode(keyCode)) {
-            if (event.repeatCount == 0) {
-                heldModifierKey = keyCode
-                heldModifierIsTap = true
-            }
-            // Consume SYM so the OS never pops up its own symbol-picker grid: Kibo uses SYM as
-            // its symbol-layer toggle (tap handled in onKeyUp). Native meta-state tracking is
-            // unaffected by consuming the event, so SYM hold-combos still set META_SYM_ON on the
-            // next key. Shift/Alt still pass through so the OS resolves uppercase / printed
-            // symbols via the Key Character Map.
-            return keyCode == KeyEvent.KEYCODE_SYM
-        }
-        // Any non-modifier key means a held modifier is part of a hold-combo, not a tap.
-        heldModifierIsTap = false
-
-        // 1) Language switch key (spec §2) — must win before normal space/enter.
+        // 1) Language switch key (spec §2) — must win before normal space.
         if (matchesSwitchKey(keyCode, event)) {
             if (event.repeatCount == 0) cycleLanguage()
             return true
         }
 
-        // Effective modifiers for THIS key = physically held (OS meta) OR our tap/lock state.
-        val altActive = isSymbolLayer(event) || altLayer != ModState.OFF
-        val shiftHeld = event.metaState and KeyEvent.META_SHIFT_ON != 0
-        val shiftActive = shiftHeld || shiftMod != ModState.OFF
-        val oneShotAlt = altLayer == ModState.ONESHOT
-        val oneShotShift = shiftMod == ModState.ONESHOT
-
         // 2) Editing keys
         when (keyCode) {
             KeyEvent.KEYCODE_DEL -> { handleBackspace(event); return true }
             KeyEvent.KEYCODE_SPACE -> {
-                // Insert the space through the InputConnection (commitText) instead of
-                // passing the raw hardware key event on to the app. Some editors (e.g. KakaoTalk)
-                // drop the first space that arrives right after a finishComposingText — the field
-                // appears to lose focus and only the *second* press registers. Committing the
-                // space as text — the same path the on-screen Space key already uses — makes it
-                // land on the first press everywhere.
-                if (!controller.engine.onSpace(bridge)) bridge.commitText(" ")
-                clearOneShotModifiers()
+                val consumed = controller.engine.onSpace(bridge)
                 refreshCandidates()
-                return true
+                return consumed
             }
             KeyEvent.KEYCODE_ENTER -> {
                 val consumed = controller.engine.onEnter(bridge)
-                clearOneShotModifiers()
                 refreshCandidates()
                 return consumed
             }
@@ -367,25 +249,13 @@ class KiboInputMethodService : InputMethodService(),
 
         // 3a) alt/sym layer (spec §6): commit composition first, then insert the
         //     OS-resolved symbol; never feed it to the language engine.
-        if (altActive) {
-            // Synthesize the alt meta so the Key Character Map resolves the printed
-            // symbol/digit even when alt is tapped/locked rather than physically held.
-            val meta = event.metaState or KeyEvent.META_ALT_ON or KeyEvent.META_ALT_LEFT_ON
-            val uni = event.getUnicodeChar(meta)
+        if (isSymbolLayer(event)) {
+            val uni = event.getUnicodeChar(event.metaState)
             if (uni != 0) {
-                val ch = uni.toChar()
-                // In 日本語, the long-vowel '-' (→ ー) and ' belong to the kana reading, so
-                // feed them to the engine to extend the composition instead of breaking it (§5).
-                if (controller.current == Language.JAPANESE && (ch == '-' || ch == '\'')) {
-                    val consumed = controller.engine.onCharacter(ch, bridge)
-                    if (oneShotAlt) clearOneShotModifiers()
-                    refreshCandidates()
-                    return consumed
-                }
                 controller.engine.finishComposition(bridge)
-                val out = if (controller.current == Language.JAPANESE) Fullwidth.toFullwidth(ch) else ch
-                bridge.commitText(out.toString())
-                if (oneShotAlt) clearOneShotModifiers()
+                var ch = uni.toChar()
+                if (controller.current == Language.JAPANESE) ch = Fullwidth.toFullwidth(ch)
+                bridge.commitText(ch.toString())
                 refreshCandidates()
                 return true
             }
@@ -393,26 +263,15 @@ class KiboInputMethodService : InputMethodService(),
         }
 
         // 3b) normal letter → current language engine
-        val consumed = when (controller.current) {
+        return when (controller.current) {
             Language.KOREAN -> {
-                val ch = if (shiftActive) baseChar.toChar().uppercaseChar() else baseChar.toChar()
+                val shifted = event.metaState and KeyEvent.META_SHIFT_ON != 0
+                val ch = if (shifted) baseChar.toChar().uppercaseChar() else baseChar.toChar()
                 feedChar(ch)
             }
             Language.JAPANESE -> feedChar(baseChar.toChar())
-            Language.ENGLISH -> {
-                // Hold-shift is handled by the OS passthrough; a tapped/locked shift
-                // is not in the OS meta-state, so commit the upper-case letter ourselves.
-                if (shiftMod != ModState.OFF && !shiftHeld) {
-                    controller.engine.finishComposition(bridge)
-                    bridge.commitText(baseChar.toChar().uppercaseChar().toString())
-                    true
-                } else {
-                    false  // true passthrough (spec §4)
-                }
-            }
+            Language.ENGLISH -> false  // true passthrough (spec §4)
         }
-        if (oneShotShift) clearOneShotModifiers()
-        return consumed
     }
 
     private fun feedChar(ch: Char): Boolean {
@@ -422,16 +281,14 @@ class KiboInputMethodService : InputMethodService(),
     }
 
     private fun handleBackspace(event: KeyEvent) {
-        // First press = jamo/char delete; while held, delete one word per
-        // wordDeleteIntervalMs so a long hold clears back steadily, not instantly (spec §3).
+        // First press = jamo/char delete; holding = word delete (spec §3).
         if (event.repeatCount == 0) {
             if (!controller.engine.onBackspace(longPress = false, bridge)) {
                 currentInputConnection?.deleteSurroundingText(1, 0)
             }
-            lastWordDeleteTime = event.eventTime
             refreshCandidates()
-        } else if (event.eventTime - lastWordDeleteTime >= wordDeleteIntervalMs) {
-            lastWordDeleteTime = event.eventTime
+        } else if (!longBackspaceHandled && event.repeatCount >= 1) {
+            longBackspaceHandled = true
             controller.engine.onBackspace(longPress = true, bridge)
             refreshCandidates()
         }
@@ -458,37 +315,9 @@ class KiboInputMethodService : InputMethodService(),
     private fun isSymbolLayer(event: KeyEvent): Boolean =
         event.metaState and (KeyEvent.META_ALT_ON or KeyEvent.META_SYM_ON) != 0
 
-    private fun isModifierKeyCode(keyCode: Int): Boolean = when (keyCode) {
-        KeyEvent.KEYCODE_SHIFT_LEFT, KeyEvent.KEYCODE_SHIFT_RIGHT,
-        KeyEvent.KEYCODE_ALT_LEFT, KeyEvent.KEYCODE_ALT_RIGHT,
-        KeyEvent.KEYCODE_SYM -> true
-        else -> false
-    }
-
-    private fun isShiftKeyCode(keyCode: Int): Boolean =
-        keyCode == KeyEvent.KEYCODE_SHIFT_LEFT || keyCode == KeyEvent.KEYCODE_SHIFT_RIGHT
-
-    /** Tap cycles a modifier: OFF → one-shot (next key only) → locked → OFF. */
-    private fun onModifierTap(keyCode: Int) {
-        fun next(s: ModState) = when (s) {
-            ModState.OFF -> ModState.ONESHOT
-            ModState.ONESHOT -> ModState.LOCKED
-            ModState.LOCKED -> ModState.OFF
-        }
-        if (isShiftKeyCode(keyCode)) shiftMod = next(shiftMod) else altLayer = next(altLayer)
-    }
-
-    /** Release one-shot modifiers after they've applied to one key; keep locked ones. */
-    private fun clearOneShotModifiers() {
-        if (altLayer == ModState.ONESHOT) altLayer = ModState.OFF
-        if (shiftMod == ModState.ONESHOT) shiftMod = ModState.OFF
-        uiState.symLayer = altLayer != ModState.OFF
-        uiState.caps = shiftMod != ModState.OFF
-    }
-
     private fun updateMetaIndicators(event: KeyEvent) {
-        uiState.caps = event.metaState and KeyEvent.META_CAPS_LOCK_ON != 0 || shiftMod != ModState.OFF
-        uiState.symLayer = isSymbolLayer(event) || altLayer != ModState.OFF
+        uiState.caps = event.metaState and KeyEvent.META_CAPS_LOCK_ON != 0
+        uiState.symLayer = isSymbolLayer(event)
     }
 
     private fun refreshCandidates() {
@@ -512,31 +341,14 @@ class KiboInputMethodService : InputMethodService(),
         return textPw || numberPw
     }
 
-    /** Number / phone / date-time fields — used to auto-engage the numeric layer (spec §6). */
-    private fun isNumericField(info: EditorInfo): Boolean =
-        when (info.inputType and InputType.TYPE_MASK_CLASS) {
-            InputType.TYPE_CLASS_NUMBER,
-            InputType.TYPE_CLASS_PHONE,
-            InputType.TYPE_CLASS_DATETIME -> true
-            else -> false
-        }
-
     // ------------------------------------------------------------------------
     // On-screen surface callbacks (spec §8, §9, §10)
     // ------------------------------------------------------------------------
 
     private val actions = object : ImeActions {
-        override fun toggleOsk() {
-            uiState.oskVisible = !uiState.oskVisible
-            // Opening the on-screen keyboard closes any open panel (one surface at a time).
-            if (uiState.oskVisible) uiState.panel = ImePanel.NONE
-        }
+        override fun toggleOsk() { uiState.oskVisible = !uiState.oskVisible }
 
-        override fun openPanel(panel: ImePanel) {
-            // Tapping the active panel's button closes it; any panel deactivates the OSK.
-            uiState.panel = if (uiState.panel == panel) ImePanel.NONE else panel
-            uiState.oskVisible = false
-        }
+        override fun openPanel(panel: ImePanel) { uiState.panel = panel }
         override fun closePanel() { uiState.panel = ImePanel.NONE }
 
         override fun insert(text: String) {
